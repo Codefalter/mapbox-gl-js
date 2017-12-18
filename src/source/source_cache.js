@@ -48,7 +48,6 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _needsFullPlacement: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: number) => boolean;
@@ -130,10 +129,6 @@ class SourceCache extends Evented {
 
     pause() {
         this._paused = true;
-    }
-
-    getNeedsFullPlacement() {
-        return this._needsFullPlacement;
     }
 
     resume() {
@@ -254,8 +249,6 @@ class SourceCache extends Evented {
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
-
-        this._updatePlacement();
     }
 
     /**
@@ -578,7 +571,6 @@ class SourceCache extends Evented {
 
         tile = this._cache.getAndRemove((tileID.key: any));
         if (tile) {
-            this._updatePlacement();
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];
@@ -651,7 +643,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        this._updatePlacement();
+        tile.resetCrossTileIDs();
 
         if (tile.hasData()) {
             tile.tileID = tile.tileID.wrapped();
@@ -663,10 +655,6 @@ class SourceCache extends Evented {
             this._abortTile(tile);
             this._unloadTile(tile);
         }
-    }
-
-    _updatePlacement() {
-        this._needsFullPlacement = true;
     }
 
     /**
