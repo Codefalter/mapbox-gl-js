@@ -989,9 +989,18 @@ class Style extends Evented {
                 if (!this.placement || placementChanged || symbolBucketsChanged) {
                     this.placement = placement;
                     this.collisionIndex = this.placement.collisionIndex;
+                    this.placement.setRecent(browser.now());
+                } else {
+                    this.placement.setRecent(browser.now());
+                    this.placement.stale = placement.stale;
                 }
-                this.placement.setRecent(browser.now());
+            }
 
+            if (symbolBucketsChanged) {
+                // since the placement gets split over multiple frames it is possible
+                // these buckets were processed before they were changed and so the
+                // placement is already stale while it is in progress
+                this.pauseablePlacement.placement.setStale();
             }
 
         } else {
