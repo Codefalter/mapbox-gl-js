@@ -103,6 +103,7 @@ class VectorTileSource extends Evented implements Source {
             overscaling: overscaling,
             showCollisionBoxes: this.map.showCollisionBoxes
         };
+        let reloadingTile = false;
 
         if (tile.workerID === undefined || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
@@ -111,6 +112,7 @@ class VectorTileSource extends Evented implements Source {
             tile.reloadCallback = callback;
         } else {
             this.dispatcher.send('reloadTile', params, done.bind(this), tile.workerID);
+            reloadingTile = true;
         }
 
         function done(err, data) {
@@ -119,6 +121,10 @@ class VectorTileSource extends Evented implements Source {
 
             if (err) {
                 return callback(err);
+            }
+
+            if (reloadingTile) {
+                tile.justReloaded = true;
             }
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
