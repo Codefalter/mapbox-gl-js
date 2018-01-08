@@ -236,7 +236,10 @@ class Tile {
             const bucket = this.getBucket(layers[id]);
             if (bucket) {
                 additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
-                if (bucket instanceof SymbolBucket) {
+
+                // Add the bucket instance's id to the set of current ids.
+                // The query will only include results from current buckets.
+                if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
                     bucketInstanceIds[bucket.bucketInstanceId] = true;
                 }
             }
