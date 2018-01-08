@@ -976,7 +976,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, layerTiles);
             this._layerOrderChanged = false;
         }
 
@@ -992,11 +992,6 @@ class Style extends Evented {
                 }
                 this.placement.setRecent(browser.now());
 
-                for (const id in layerTiles) {
-                    for (const tile of layerTiles[id]) {
-                        tile.justReloaded = false;
-                    }
-                }
             }
 
         } else {

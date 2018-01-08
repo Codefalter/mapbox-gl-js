@@ -17,10 +17,10 @@ class LayerPlacement {
         this._seenCrossTileIDs = {};
     }
 
-    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement) {
+    continuePlacement(tiles: Array<Tile>, placement: Placement, showCollisionBoxes: boolean, styleLayer: StyleLayer, shouldPausePlacement, justReloaded: {[number]: boolean}) {
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.placeLayerTile(styleLayer, tile, showCollisionBoxes, this._seenCrossTileIDs);
+            placement.placeLayerTile(styleLayer, tile, showCollisionBoxes, this._seenCrossTileIDs, tile.justReloaded || justReloaded[tile.tileID.key]);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
@@ -37,15 +37,27 @@ class PauseablePlacement {
     _forceFullPlacement: boolean;
     _showCollisionBoxes: boolean;
     _inProgressLayer: ?LayerPlacement;
+    justReloaded: {[string]: {[number]: boolean}};
 
     constructor(transform: Transform, order: Array<string>,
-            forceFullPlacement: boolean, showCollisionBoxes: boolean, fadeDuration: number) {
+            forceFullPlacement: boolean, showCollisionBoxes: boolean, fadeDuration: number, layerTiles: {[string]: Array<Tile>}) {
 
         this.placement = new Placement(transform, fadeDuration);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
         this._done = false;
+
+        // make a copy of justReloaded states so that updates during placement
+        // aren't lost and overwritten
+        this.justReloaded = {};
+        for (const id in layerTiles) {
+            this.justReloaded[id] = {};
+            for (const tile of layerTiles[id]) {
+                this.justReloaded[id][tile.tileID.key] = tile.justReloaded;
+                tile.justReloaded = false;
+            }
+        }
     }
 
     isDone(): boolean {
@@ -69,7 +81,7 @@ class PauseablePlacement {
                     this._inProgressLayer = new LayerPlacement();
                 }
 
-                const pausePlacement = this._inProgressLayer.continuePlacement(layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
+                const pausePlacement = this._inProgressLayer.continuePlacement(layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, this.justReloaded[layer.source]);
 
                 if (pausePlacement) {
                     // We didn't finish placing all layers within 2ms,

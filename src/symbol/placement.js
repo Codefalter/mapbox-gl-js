@@ -78,7 +78,7 @@ class Placement {
         this.fadeDuration = fadeDuration;
     }
 
-    placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
+    placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }, justReloaded: boolean) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
         if (!symbolBucket) return;
 
@@ -102,7 +102,7 @@ class Placement {
                 pixelsToTileUnits(tile, 1, this.transform.zoom));
 
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source, tile.justReloaded);
+                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source, justReloaded);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
