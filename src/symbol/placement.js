@@ -268,9 +268,15 @@ class Placement {
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances[s];
             const isDuplicate = seenCrossTileIDs[symbolInstance.crossTileID];
-            const opacityState = (!isDuplicate && this.opacities[symbolInstance.crossTileID]) ?
-                this.opacities[symbolInstance.crossTileID] :
-                defaultOpacityState;
+
+            let opacityState = this.opacities[symbolInstance.crossTileID];
+            if (!opacityState) {
+                opacityState = defaultOpacityState;
+                // store the state so that future placements use it as a starting point
+                this.opacities[symbolInstance.crossTileID] = opacityState;
+            } else if (isDuplicate) {
+                opacityState = defaultOpacityState;
+            }
 
             seenCrossTileIDs[symbolInstance.crossTileID] = true;
 
